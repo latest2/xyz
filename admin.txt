@@ -1,0 +1,710 @@
+ANN Breast Cancer
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.layers import Dense,Dropout
+from tensorflow.keras.models import Sequential
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+data=pd.read_csv("data.csv")
+data.head()
+data.info()
+X=data.drop(columns=["diagnosis"])
+y=data["diagnosis"]
+le=LabelEncoder()
+y=le.fit_transform(y)
+x_train,x_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=42)
+model = Sequential()
+
+model.add(Dense(16,activation = 'relu',input_dim=30))
+model.add(Dropout(0.35))
+model.add(Dense(32,activation = 'relu'))
+model.add(Dropout(0.35))
+model.add(Dense(1,activation = 'sigmoid'))
+
+model.compile(optimizer = 'adam',loss = "binary_crossentropy",metrics=["accuracy"])
+model.summary()
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Create the ANN model
+model = Sequential()
+model.add(Dense(units=64, activation='relu', input_shape=(X_train.shape[1],)))  # Input layer
+model.add(Dense(units=32, activation='relu'))  # Hidden layer
+model.add(Dense(units=1, activation='sigmoid'))  # Output layer
+
+# Compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Print the model summary
+model.summary()
+
+# Train the model
+history = model.fit(X_train, y_train, epochs=10, batch_size=32, validation_split=0.2)  # Assuming 10 epochs and a batch size of 32
+
+# Evaluate the model on test data
+loss, accuracy = model.evaluate(X_test, y_test)
+print(f'Test Accuracy: {accuracy}')
+
+# Plot the model architecture
+tf.keras.utils.plot_model(model, to_file='ann_model.png', show_shapes=True, show_layer_names=True)
+
+# Plot training history (loss and accuracy)
+plt.figure(figsize=(10, 4))
+
+# Plot training & validation accuracy values
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('Model Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend(['Train', 'Validation'], loc='upper left')
+
+# Plot training & validation loss values
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend(['Train', 'Validation'], loc='upper left')
+
+plt.tight_layout()
+plt.show()
+
+y_pred = model.predict(x_test)
+y_pred = (y_pred > 0.5)
+from sklearn.metrics import confusion_matrix
+cm = confusion_matrix(y_test, y_pred)
+sns.heatmap(cm, annot=True)
+plt.savefig('h.png')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+clustering  red wine dataset
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans, AgglomerativeClustering, DBSCAN
+from sklearn.mixture import GaussianMixture
+from sklearn.decomposition import PCA
+
+data = pd.read_csv('winequality-red.csv')
+
+# Select relevant features
+selected_features = data.drop('quality', axis=1)
+
+# Preprocess the data
+selected_features.fillna(selected_features.mean(), inplace=True)  # Fill missing values with means
+
+scaler = StandardScaler()
+scaled_features = scaler.fit_transform(selected_features)
+
+# Apply K-means clustering
+kmeans = KMeans(n_clusters=5, random_state=42)
+kmeans_clusters = kmeans.fit_predict(scaled_features)
+
+# Apply Hierarchical clustering
+agg_clustering = AgglomerativeClustering(n_clusters=5)
+agg_clusters = agg_clustering.fit_predict(scaled_features)
+
+# Apply DBSCAN clustering
+dbscan = DBSCAN(eps=0.5, min_samples=5)
+dbscan_clusters = dbscan.fit_predict(scaled_features)
+
+# Apply Expectation Maximization (EM) - Gaussian Mixture Model
+gmm = GaussianMixture(n_components=5, random_state=42)
+gmm_clusters = gmm.fit_predict(scaled_features)
+
+# Visualize clusters using PCA for dimensionality reduction (example with the first two principal components)
+pca = PCA(n_components=2)
+principal_components = pca.fit_transform(scaled_features)
+
+plt.figure(figsize=(12, 10))
+
+plt.subplot(221)
+plt.scatter(principal_components[:, 0], principal_components[:, 1], c=kmeans_clusters, cmap='viridis')
+plt.title('K-means Clustering')
+
+plt.subplot(222)
+plt.scatter(principal_components[:, 0], principal_components[:, 1], c=agg_clusters, cmap='viridis')
+plt.title('Hierarchical Clustering')
+
+plt.subplot(223)
+plt.scatter(principal_components[:, 0], principal_components[:, 1], c=dbscan_clusters, cmap='viridis')
+plt.title('DBSCAN Clustering')
+
+plt.subplot(224)
+plt.scatter(principal_components[:, 0], principal_components[:, 1], c=gmm_clusters, cmap='viridis')
+plt.title('EM - Gaussian Mixture Model')
+
+plt.tight_layout()
+plt.show()
+kmeans_silhouette = silhouette_score(scaled_features, kmeans_clusters)
+print(f"K-means Silhouette Score: {kmeans_silhouette}")
+
+# Compute silhouette scores for Hierarchical Clustering
+agg_silhouette = silhouette_score(scaled_features, agg_clusters)
+print(f"Hierarchical Clustering Silhouette Score: {agg_silhouette}")
+
+# Compute silhouette scores for DBSCAN
+dbscan_silhouette = silhouette_score(scaled_features, dbscan_clusters)
+print(f"DBSCAN Silhouette Score: {dbscan_silhouette}")
+
+# Compute silhouette scores for EM - Gaussian Mixture Model
+gmm_silhouette = silhouette_score(scaled_features, gmm_clusters)
+print(f"EM - Gaussian Mixture Model Silhouette Score: {gmm_silhouette}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Boosting red wine dataset
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier
+from xgboost import XGBClassifier
+from catboost import CatBoostClassifier
+from sklearn.metrics import accuracy_score
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+data = pd.read_csv('winequality-red.csv')
+
+# Basic exploration
+print(data.head())  # Check the first few rows of data
+print(data.info())  # Get information about the dataset
+print(data.describe())
+
+# Check for missing values
+print(data.isnull().sum())
+
+# Visualizing correlation between features
+plt.figure(figsize=(10, 8))
+sns.heatmap(data.corr(), annot=True, cmap='coolwarm', fmt='.2f')
+plt.title('Correlation Heatmap')
+plt.show()
+
+# Handling missing values
+data = data.fillna(data.mean())
+
+# Encoding the target variable
+quality_mapping = {3: 0, 4: 1, 5: 2, 6: 3, 7: 4, 8: 5}
+data['quality'] = data['quality'].map(quality_mapping)
+
+# Separate features and target variable
+X = data.drop('quality', axis=1)
+y = data['quality']
+
+# Splitting the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Handling NaN values in target variable y_train
+mean_y_train = np.nanmean(y_train)
+y_train = np.where(np.isnan(y_train), mean_y_train, y_train)
+
+# Initialize models
+ada_boost = AdaBoostClassifier()
+gradient_boost = GradientBoostingClassifier()
+xg_boost = XGBClassifier()
+cat_boost = CatBoostClassifier()
+
+# Train models
+ada_boost.fit(X_train, y_train)
+gradient_boost.fit(X_train, y_train)
+xg_boost.fit(X_train, y_train)
+cat_boost.fit(X_train, y_train)
+
+# Make predictions
+ada_pred = ada_boost.predict(X_test)
+gradient_pred = gradient_boost.predict(X_test)
+xg_pred = xg_boost.predict(X_test)
+cat_pred = cat_boost.predict(X_test)
+
+# Evaluate models
+ada_accuracy = accuracy_score(y_test, ada_pred)
+gradient_accuracy = accuracy_score(y_test, gradient_pred)
+xg_accuracy = accuracy_score(y_test, xg_pred)
+cat_accuracy = accuracy_score(y_test, cat_pred)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Apriori Algorithm :
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from mlxtend.preprocessing import TransactionEncoder
+from mlxtend.frequent_patterns import apriori, association_rules
+from pandas.plotting import parallel_coordinates
+import warnings
+warnings.filterwarnings('ignore')
+df = pd.read_csv('basket_analysis.csv')
+print(df)
+df.drop(df.columns[0],axis=1,inplace=True)
+print(df)
+df.shape
+df.mean
+frequent_itemsets = apriori(df,
+min_support = .006,
+max_len = 3,
+use_colnames = True)
+frequent_itemsets
+rules = association_rules(frequent_itemsets,
+metric = 'support',
+min_threshold=0.1)
+rules
+filtered_rules = rules[(rules['antecedent support'] > 0.02)&
+(rules['consequent support'] >0.01) &
+(rules['confidence'] > 0.2) &
+(rules['lift'] > 1.0)]
+filtered_rules
+antecedents
+filtered_rules.sort_values('confidence',ascending=False)
+sns.scatterplot(x = "support", y = "confidence", data =
+filtered_rules)
+plt.show()
+filtered_rules = rules[(rules['antecedent support'] > 0.02)&
+(rules['consequent support'] >0.01) &
+(rules['confidence'] > 0.45) &
+(rules['lift'] > 1.0)]
+filtered_rules
+sns.scatterplot(x = "support", y = "confidence", size= 'leverage',data
+= filtered_rules)
+plt.legend(bbox_to_anchor= (1.02, 1), loc='upper left',)
+plt.show()
+filtered_rules = rules[(rules['antecedent support'] > 0.02)&
+(rules['consequent support'] >0.01) &
+(rules['confidence'] > 0.45) &
+(rules['lift'] > 1.0)&
+(rules['support']>0.195)]
+filtered_rules
+def rules_to_coordinates(rules):
+rules['antecedent'] = rules['antecedents'].apply(lambda
+antecedent:list(antecedent)[0])
+rules['consequent'] = rules['consequents'].apply(lambda
+consequent:list(consequent)[0])
+rules['rule'] = rules.index
+return rules[['antecedent','consequent','rule']]
+coords = rules_to_coordinates(filtered_rules)
+# Generate parallel coordinates plot
+plt.figure(figsize=(3,6))
+parallel_coordinates(coords, 'rule',colormap = 'ocean')
+plt.legend([])
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+KNN,ANN , DECISION TREE, SVM, NAIVE BAYES
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neural_network import MLPClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+data = pd.read_csv('winequality-red.csv')
+
+# Select relevant features (exclude 'quality' column)
+X = data.drop('quality', axis=1)
+y = data['quality']
+
+# Preprocess the data
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Apply Decision Tree
+dt_classifier = DecisionTreeClassifier(random_state=42)
+dt_classifier.fit(X_train, y_train)
+dt_pred = dt_classifier.predict(X_test)
+dt_accuracy = accuracy_score(y_test, dt_pred)
+print("Decision Tree Accuracy:", dt_accuracy)
+print(classification_report(y_test, dt_pred))
+
+# Apply SVM
+svm_classifier = SVC(random_state=42)
+svm_classifier.fit(X_train, y_train)
+svm_pred = svm_classifier.predict(X_test)
+svm_accuracy = accuracy_score(y_test, svm_pred)
+print("SVM Accuracy:", svm_accuracy)
+print(classification_report(y_test, svm_pred))
+
+# Apply Naive Bayes
+nb_classifier = GaussianNB()
+nb_classifier.fit(X_train, y_train)
+nb_pred = nb_classifier.predict(X_test)
+nb_accuracy = accuracy_score(y_test, nb_pred)
+print("Naive Bayes Accuracy:", nb_accuracy)
+print(classification_report(y_test, nb_pred))
+
+# Apply ANN
+ann_classifier = MLPClassifier(random_state=42)
+ann_classifier.fit(X_train, y_train)
+ann_pred = ann_classifier.predict(X_test)
+ann_accuracy = accuracy_score(y_test, ann_pred)
+print("ANN Accuracy:", ann_accuracy)
+print(classification_report(y_test, ann_pred))
+
+# Apply k-Nearest Neighbors
+knn_classifier = KNeighborsClassifier()
+knn_classifier.fit(X_train, y_train)
+knn_pred = knn_classifier.predict(X_test)
+knn_accuracy = accuracy_score(y_test, knn_pred)
+print("k-NN Accuracy:", knn_accuracy)
+print(classification_report(y_test, knn_pred))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DECISION TREE BREAST CANCER
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings("ignore")
+
+# Splitting Data
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import RobustScaler
+
+# Modeling
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, recall_score
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.model_selection import GridSearchCV
+from sklearn.tree import plot_tree
+
+cancer = pd.read_csv('data 2.csv')
+cancer
+
+cancer.info()
+
+
+print(cancer.columns)
+
+
+cancer.isna().sum()/len(cancer.index)*100
+
+cancer
+
+cancer['diagnosis'] = np.where(cancer['diagnosis'] == 'M', 1, 0)
+cancer['diagnosis'].value_counts()/cancer.shape[0]*100
+
+X = cancer.drop('diagnosis', axis = 1)
+y = cancer['diagnosis']
+
+robust = RobustScaler()
+X_scaled = robust.fit_transform(X)
+
+X.shape
+
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y,
+                                                   stratify = y,
+                                                    test_size = 0.3,
+                                                   random_state = 3030)
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+k = range(1,100,2)
+testing_accuracy = []
+training_accuracy = []
+score = 0
+
+for i in k:
+    knn = KNeighborsClassifier(n_neighbors = i)
+    knn.fit(X_train, y_train)
+
+    y_predict_train = knn.predict(X_train)
+    training_accuracy.append(accuracy_score(y_train, y_predict_train))
+
+    y_predict_test = knn.predict(X_test)
+    acc_score = accuracy_score(y_test,y_predict_test)
+    testing_accuracy.append(acc_score)
+
+    if score < acc_score:
+        score = acc_score
+        best_k = i
+
+# Plot the training accuracy
+sns.lineplot(x=k, y=training_accuracy, label='training accuracy')
+sns.scatterplot(x=k, y=training_accuracy)
+
+# Plot the testing accuracy
+sns.lineplot(x=k, y=testing_accuracy, label='testing accuracy')
+sns.scatterplot(x=k, y=testing_accuracy)
+
+plt.legend()
+plt.show()
+
+print('This is the best K for KNeighbors Classifier: ', best_k, '\nAccuracy score is: ', score)
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+depth = range(1,25)
+testing_accuracy = []
+training_accuracy = []
+score = 0
+
+for i in depth:
+    tree = DecisionTreeClassifier(max_depth = i, criterion = 'entropy')
+    tree.fit(X_train, y_train)
+
+    y_predict_train = tree.predict(X_train)
+    training_accuracy.append(accuracy_score(y_train, y_predict_train))
+
+    y_predict_test = tree.predict(X_test)
+    acc_score = accuracy_score(y_test,y_predict_test)
+    testing_accuracy.append(acc_score)
+
+    if score < acc_score:
+        score = acc_score
+        best_depth = i
+
+
+# Plot the training accuracy
+sns.lineplot(x=depth, y=training_accuracy, label='training accuracy')
+sns.scatterplot(x=depth, y=training_accuracy)
+
+# Plot the testing accuracy
+sns.lineplot(x=depth, y=testing_accuracy, label='testing accuracy')
+sns.scatterplot(x=depth, y=testing_accuracy)
+
+plt.legend()
+plt.show()
+
+print('This is the best depth for Decision Tree Classifier: ', best_depth, '\nAccuracy score is: ', score)
+
+tree = DecisionTreeClassifier(max_depth = 3, random_state = 3030)
+
+hyperparam_space = {
+    'criterion': ['gini', 'entropy'],
+    'splitter': ['best', 'random'],
+    'max_depth': [3, 5, 7, 9, 11],
+    'min_samples_leaf': [3, 9, 13, 15, 17],
+    'class_weight': ['list', 'dict', 'balanced'],
+    'random_state': [3030]
+}
+
+grid = GridSearchCV(
+                tree,
+                param_grid = hyperparam_space,
+                cv = StratifiedKFold(n_splits = 5),
+                scoring = 'recall',
+                n_jobs = -1)
+
+grid.fit(X_train, y_train)
+
+print('best score', grid.best_score_)
+print('best param', grid.best_params_)
+
+plt.figure(figsize=(15,8))
+plot_tree(grid.best_estimator_, feature_names = list(X), class_names = ['Benign','Malignant'], filled = True)
+plt.title('Tree Plot')
+plt.show()
+
+importance_table = pd.DataFrame({
+    'imp': grid.best_estimator_.feature_importances_
+}, index = X.columns)
+importance_table.sort_values('imp', ascending = False)
+
+importance_table.sort_values('imp', ascending = True).plot(kind = 'barh', figsize = (15,8))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SVM & nb BREASTCANCER
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, mean_absolute_error,mean_squared_error,confusion_matrix,classification_report
+
+df = pd.read_csv("data.csv")
+
+df.head()
+
+df.info()
+
+df.describe()
+
+df.isnull().sum()
+
+df = df.drop('Unnamed: 32',axis=1)
+
+df = df.drop('id',axis=1)
+
+df['diagnosis'] = df['diagnosis'].replace({'M':1,'B':0})
+
+df.corr()['diagnosis'].sort_values()
+
+df.head()
+
+X = df.drop('diagnosis',axis=1)
+y = df['diagnosis']
+
+X_train, X_test, y_train, y_test = train_test_split( X, y, test_size=0.3, random_state=7)
+
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+from sklearn.svm import SVC
+
+model = SVC()
+model.fit(X_train,y_train)
+
+y_pred = model.predict(X_test)
+print(f"Confusion Matrix is: \n {confusion_matrix(y_test,y_pred)}\n\n\n")
+print("---------------------------------------------------------------------------------")
+print(f"Classification Report is \n: {classification_report(y_test,y_pred)}\n\n\n")
+print("---------------------------------------------------------------------------------")
+print(f"Accuraccy Precent is: \n {accuracy_score(y_test,y_pred)*100}\n\n\n")
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.naive_bayes import GaussianNB  # Import Gaussian Naive Bayes
+
+# Your previous data processing steps remain unchanged
+
+# Using Gaussian Naive Bayes instead of SVC
+model = GaussianNB()  # Create a Gaussian Naive Bayes model
+model.fit(X_train, y_train)  # Train the model
+
+y_pred = model.predict(X_test)
+
+print(f"Confusion Matrix is: \n {confusion_matrix(y_test, y_pred)}\n\n\n")
+print("---------------------------------------------------------------------------------")
+print(f"Classification Report is \n: {classification_report(y_test, y_pred)}\n\n\n")
+print("---------------------------------------------------------------------------------")
+print(f"Accuracy Percentage is: \n {accuracy_score(y_test, y_pred) * 100}\n\n\n")
